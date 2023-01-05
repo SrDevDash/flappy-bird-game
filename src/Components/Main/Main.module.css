@@ -1,4 +1,5 @@
 .container {
+  position: relative;
   width: 100%;
   height: 600px;
   background-color: antiquewhite;
@@ -10,9 +11,18 @@
   background-color: greenyellow;
 }
 
+.fpsCount {
+  position: absolute;
+  right: 0;
+
+  color: black;
+}
+
 .bird {
   width: 70px;
   height: 70px;
+  position: absolute;
+  left: 100px;
   background-image: url("../../img/bird.png");
   background-position: center;
   background-size: cover;
