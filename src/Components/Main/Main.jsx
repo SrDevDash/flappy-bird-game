@@ -19,13 +19,17 @@ export default function Main() {
   useEffect(() => {
     let timeID;
 
-    if (!(birdPosition > 550) && isGameStarted) {
+    birdPosition > 550 && setIsGameStarted(false);
+
+    if (isGameStarted) {
       timeID = setInterval(() => {
         setPoints(points + 1);
 
         if (bird.lift === 0) {
-          bird.y += bird.gravity * bird.dificulty * 2;
+          bird.y += bird.gravity * bird.dificulty * 2 + bird.velocity;
+          bird.velocity += 0.1;
         } else {
+          bird.velocity = 0;
           bird.y -= bird.lift;
           bird.lift--;
         }
@@ -39,9 +43,8 @@ export default function Main() {
               // bird = 60 px / 2 = 30px
               // gameHeigtht = 600 px
               // structure height = ?
-              console.log(GAME_HEIGTH - birdPosition - 60, height);
+
               touch = height > GAME_HEIGTH - birdPosition - 60;
-              console.log(touch);
             } else {
               touch = birdPosition + 60 < height;
             }
@@ -66,7 +69,7 @@ export default function Main() {
         gameManager.clearStructure();
 
         setStructure(gameManager.structures);
-      }, 3000);
+      }, gameManager.spawnTime);
       return () => {
         clearInterval(spawnID);
       };

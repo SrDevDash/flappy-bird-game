@@ -4,7 +4,8 @@ export default class GameManager {
     constructor() {
         this.life = 1;
         this.structures = [];
-        this.velocity = 5;
+        this.velocity = 10;
+        this.spawnTime = 2000;
     }
 
 
