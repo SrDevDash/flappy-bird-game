@@ -12,6 +12,7 @@ const GAME_HEIGTH = 600;
 
 export default function Main() {
   const [birdPosition, setBirdPosition] = useState(0);
+  const [points, setPoints] = useState(0);
   const [structure, setStructure] = useState(gameManager.structures);
   const [isGameStarted, setIsGameStarted] = useState(false);
 
@@ -20,6 +21,8 @@ export default function Main() {
 
     if (!(birdPosition > 550) && isGameStarted) {
       timeID = setInterval(() => {
+        setPoints(points + 1);
+
         if (bird.lift === 0) {
           bird.y += bird.gravity * bird.dificulty * 2;
         } else {
@@ -30,15 +33,19 @@ export default function Main() {
         gameManager.structures.forEach((structure) => {
           structure.x -= gameManager.velocity;
           if (structure.x < 160 && structure.x > 20) {
-            if (structure.style.buttom) {
+            const height = structure.height;
+            let touch = false;
+            if (structure.style.bottom) {
               // bird = 60 px / 2 = 30px
-              // gameHeigth = 600 px
-              // structure heigth = ?
-              const heigth = structure.heigth;
-
-              const touch = heigth > GAME_HEIGTH - birdPosition - 30;
-              touch && console.log("Game over");
+              // gameHeigtht = 600 px
+              // structure height = ?
+              console.log(GAME_HEIGTH - birdPosition - 60, height);
+              touch = height > GAME_HEIGTH - birdPosition - 60;
+              console.log(touch);
+            } else {
+              touch = birdPosition + 60 < height;
             }
+            touch && setIsGameStarted(false);
           }
         });
         setBirdPosition(bird.y);
@@ -72,6 +79,12 @@ export default function Main() {
       onKeyDown={(e) => controller(e, bird)}
       className={style.container}
     >
+      {!isGameStarted && (
+        <div className={style.startOrGameOver}>
+          Press the Bottom start to start
+        </div>
+      )}
+
       <button
         style={{ position: "absolute", top: "-30px" }}
         onClick={() => setIsGameStarted(true)}
@@ -79,6 +92,8 @@ export default function Main() {
         Start
       </button>
       <div className={style.fpsCount}>FPS: {60}</div>
+      <div className={style.points}>Points: {points}</div>
+
       <div className={style.bird} style={{ top: birdPosition }}></div>
       {structure.map((structure, id) => (
         <div key={id} style={{ ...structure.style, left: structure.x }}></div>
