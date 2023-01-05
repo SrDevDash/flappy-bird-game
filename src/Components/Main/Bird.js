@@ -1,6 +1,6 @@
 export default class Bird {
     constructor() {
-        this.y = 0;
+        this.y = 200;
         this.velocity = 0;
         this.lift = 0;
 

@@ -2,7 +2,7 @@
 
 const controller = (e, bird) => {
     switch (e.key) {
-        case 's':
+        case 's' || 'enter':
             jump(bird);
             break
 

@@ -6,15 +6,17 @@
 }
 
 .structure {
+  position: absolute;
   width: 100px;
   height: 250px;
   background-color: greenyellow;
+  bottom: none;
 }
 
 .fpsCount {
   position: absolute;
   right: 0;
-
+  z-index: 100;
   color: black;
 }
 
