@@ -73,6 +73,15 @@ export default function Main() {
     }
   }, [gameManager.structures.length, isGameStarted]);
 
+  const handleReStart = (e) => {
+    bird.y = 200;
+    setBirdPosition(bird.y);
+    setIsGameStarted(true);
+    gameManager.clearAllStructure();
+    setStructure(gameManager.structures);
+    setPoints(0);
+  };
+
   return (
     <div
       tabIndex={0}
@@ -80,16 +89,14 @@ export default function Main() {
       className={style.container}
     >
       {!isGameStarted && (
-        <div className={style.startOrGameOver}>
-          Press the Bottom start to start
-        </div>
+        <div className={style.startOrGameOver}>PRESS START</div>
       )}
 
       <button
         style={{ position: "absolute", top: "-30px" }}
-        onClick={() => setIsGameStarted(true)}
+        onClick={handleReStart}
       >
-        Start
+        START
       </button>
       <div className={style.fpsCount}>FPS: {60}</div>
       <div className={style.points}>Points: {points}</div>

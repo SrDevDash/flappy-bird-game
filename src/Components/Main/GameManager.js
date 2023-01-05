@@ -17,4 +17,8 @@ export default class GameManager {
     clearStructure() {
         this.structures = this.structures.filter(structure => !(structure.x < 0))
     }
+
+    clearAllStructure() {
+        this.structures = [];
+    }
 }
