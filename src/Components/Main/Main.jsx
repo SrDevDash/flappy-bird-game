@@ -2,11 +2,23 @@ import React from "react";
 import style from "./Main.module.css";
 import { useState } from "react";
 import { controller } from "./controllers";
-import Bird from "./Bird";
 import { useEffect } from "react";
-import GameManager from "./GameManager";
 
-const bird = new Bird();
+import Bird from "./Bird";
+import GameManager from "./GameManager";
+import { trainingData, changeData } from "./trainingData";
+const brain = require("brain.js");
+
+let net = new brain.NeuralNetwork({
+  activation: "sigmoid", // activation function
+  hiddenLayers: [6],
+});
+
+net.train(trainingData);
+
+let dataToLearn = [];
+
+let bird = new Bird();
 const gameManager = new GameManager();
 const GAME_HEIGTH = 600;
 
@@ -15,15 +27,54 @@ export default function Main() {
   const [points, setPoints] = useState(0);
   const [structure, setStructure] = useState(gameManager.structures);
   const [isGameStarted, setIsGameStarted] = useState(false);
+  const [GEN, setGent] = useState(1);
 
   useEffect(() => {
     let timeID;
 
-    birdPosition > 550 && setIsGameStarted(false);
+    birdPosition > 550 && handleGEN(false);
 
     if (isGameStarted) {
       timeID = setInterval(() => {
         setPoints(points + 1);
+        if (gameManager.structures.length) {
+          let input;
+          if (gameManager.structures[0].style.bottom) {
+            input = {
+              birdHeight: GAME_HEIGTH - birdPosition - 70,
+              obstacleHeight: gameManager.structures[0].height,
+              obstaclebot: true,
+              distance: gameManager.structures[0].x - 170,
+              floorDistance: GAME_HEIGTH - birdPosition + 70,
+              velocity: bird.velocity,
+            };
+          } else {
+            input = {
+              birdHeight: birdPosition + 70,
+              obstacleHeight: gameManager.structures[0].height,
+              obstaclebot: false,
+              distance: gameManager.structures[0].x - 170,
+              floorDistance: GAME_HEIGTH - birdPosition + 70,
+              velocity: bird.velocity,
+            };
+          }
+
+          const ia = net.run(input);
+          const result = ia.jump > ia.down ? "w" : "s";
+          const data = { input, output: {} };
+
+          console.log(ia);
+
+          result === "w"
+            ? (data.output["jump"] = 1)
+            : (data.output["down"] = 1);
+
+          dataToLearn.push(data);
+
+          gameManager.clearStructure();
+          setStructure(gameManager.structures);
+          controller({ key: result }, bird);
+        }
 
         if (bird.lift === 0) {
           bird.y += bird.gravity * bird.dificulty * 2 + bird.velocity;
@@ -48,11 +99,12 @@ export default function Main() {
             } else {
               touch = birdPosition + 60 < height;
             }
-            touch && setIsGameStarted(false);
+            // touch && setIsGameStarted(false);
+            touch && handleGEN();
           }
         });
         setBirdPosition(bird.y);
-      }, 24);
+      }, 30);
     }
 
     return () => {
@@ -64,9 +116,9 @@ export default function Main() {
     let spawnID;
 
     if (isGameStarted) {
+      setPoints(points + 1);
       spawnID = setInterval(() => {
         gameManager.spawnStructure();
-        gameManager.clearStructure();
 
         setStructure(gameManager.structures);
       }, gameManager.spawnTime);
@@ -78,11 +130,41 @@ export default function Main() {
 
   const handleReStart = (e) => {
     bird.y = 200;
+    bird.velocity = 0;
+
     setBirdPosition(bird.y);
     setIsGameStarted(true);
     gameManager.clearAllStructure();
     setStructure(gameManager.structures);
     setPoints(0);
+
+    gameManager.spawnStructure();
+  };
+
+  const handleGEN = (e) => {
+    let lastpoint = 0;
+    bird.y = 200;
+    bird.velocity = 0;
+
+    setBirdPosition(bird.y);
+    setIsGameStarted(true);
+    gameManager.clearAllStructure();
+    setStructure(gameManager.structures);
+    setPoints(0);
+
+    gameManager.spawnStructure();
+
+    // logic to create another bird
+
+    setGent(GEN + 1);
+
+    if (points > lastpoint) {
+      net.train(changeData(dataToLearn));
+
+      lastpoint = points;
+    }
+
+    dataToLearn = [];
   };
 
   return (
@@ -96,12 +178,19 @@ export default function Main() {
       )}
 
       <button
-        style={{ position: "absolute", top: "-30px" }}
+        style={{ position: "absolute", top: "-30px", left: "300px" }}
         onClick={handleReStart}
       >
         START
       </button>
-      <div className={style.fpsCount}>FPS: {60}</div>
+      <button
+        style={{ position: "absolute", top: "-30px" }}
+        onClick={handleGEN}
+      >
+        OTHER GEN
+      </button>
+      <div className={style.fpsCount}>GEN {GEN}</div>
+      <div className={style.points}>Points: {points}</div>
       <div className={style.points}>Points: {points}</div>
 
       <div className={style.bird} style={{ top: birdPosition }}></div>
